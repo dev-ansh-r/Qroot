@@ -3,7 +3,7 @@
 # Same robot software as the Pi; the Pi-only GPIO parts are swapped by robot/board_shims.py.
 # Idempotent: re-running only fills in what is missing. See docs/rb3gen2.md.
 #
-#   git clone -b rb3gen2 https://github.com/dev-ansh-r/jero ~/Jero
+#   git clone https://github.com/dev-ansh-r/Qroot ~/Jero
 #   ~/Jero/robot/setup_rb3.sh
 set -euo pipefail
 

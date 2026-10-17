@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-time setup of a CUDA 12 GPU box for Open_Duck_Playground (MuJoCo MJX + JAX + Brax PPO).
-#   git clone --recurse-submodules=upstream/Open_Duck_Playground https://github.com/dev-ansh-r/Jero
-#   Jero/training/setup_server.sh
+#   git clone --recurse-submodules=upstream/Open_Duck_Playground https://github.com/dev-ansh-r/Qroot
+#   Qroot/training/setup_server.sh
 set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PG="$REPO/upstream/Open_Duck_Playground"

@@ -1,6 +1,6 @@
-# Running Jero on the Qualcomm RB3 Gen 2 (instead of the Pi Zero 2 W)
+# Running Qroot on the Qualcomm RB3 Gen 2 (instead of the Pi Zero 2 W)
 
-Branch `rb3gen2`. The RB3 Gen 2 (QCS6490) takes the Pi Zero's place as the robot computer: it runs
+Branch `main` (the Pi Zero version is on `pi-zero`). The RB3 Gen 2 (QCS6490) takes the Pi Zero's place as the robot computer: it runs
 the same 50 Hz walk (upstream policy loop, `robot/jero_walk.py`), talks to the servos through the
 same Pico bridge, and pairs with the same PS4 pad. Only the Raspberry Pi specific parts change.
 
@@ -42,7 +42,7 @@ Pi it installs the board shims, and requires `--imu mpu6050`. Force it with `--b
 ## Setup (on the RB3, Ubuntu)
 
 ```bash
-git clone -b rb3gen2 https://github.com/dev-ansh-r/jero ~/Jero
+git clone https://github.com/dev-ansh-r/Qroot ~/Jero
 ~/Jero/robot/setup_rb3.sh          # packages, Python env, runtime @376de65, policy, key, Bluetooth, udev
 # log out and back in (new groups: dialout, i2c, input)
 ```

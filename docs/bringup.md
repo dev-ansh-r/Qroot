@@ -33,7 +33,7 @@ Jero's Pi runs (verified 4 Oct 2026: Raspberry Pi OS Lite 64-bit, Debian 13 trix
    ```
 4. Jero:
    ```bash
-   git clone https://github.com/dev-ansh-r/jero ~/Jero && ~/Jero/robot/setup_pi.sh
+   git clone https://github.com/dev-ansh-r/Qroot ~/Jero && ~/Jero/robot/setup_pi.sh
    python ~/Jero/tools/policy_dryrun.py --imu none --seconds 10     # policy on the Pi, no hardware
    ```
 5. Copy `~/.config/jero/link.key` to the brain machine(s).

@@ -3,7 +3,7 @@
 # Idempotent: re-running only fills in what is missing. Never overwrites duck_config.json or keys.
 #
 #   ssh bdxv2@bdxv2.local
-#   git clone https://github.com/dev-ansh-r/Jero ~/Jero     # no submodules needed: the image has the runtime
+#   git clone https://github.com/dev-ansh-r/Qroot ~/Jero     # no submodules needed: the image has the runtime
 #   ~/Jero/robot/setup_pi.sh [--replace-autostart]
 set -euo pipefail
 

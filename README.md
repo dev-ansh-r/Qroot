@@ -1,75 +1,101 @@
-# Jero
+# Physical AI on Qualcomm: a walking robot on the RB3 Gen 2
 
-An open-source bipedal robot for the **10 Oct 2026** showcase. Jero is an
-[Open Duck Mini v2](https://github.com/apirrone/Open_Duck_Mini) build sourced in India: 14× Feetech STS3215,
-Raspberry Pi Zero 2 W onboard, and an RL walking policy trained in MuJoCo. This repo adds a
-Wi-Fi command link, so a Jetson Orin Nano Super can act as the robot's off-board "brain".
+This repo is an end-to-end physical AI stack on one Qualcomm board. A **Qualcomm RB3 Gen 2** (QCS6490) runs
+everything a small walking robot needs, with no PC or cloud in the loop for control:
+- **Sense:** depth and colour from an Intel RealSense D455, and the board's onboard IMU (TDK ICM-42688), read through
+  Qualcomm's sensing hub.
+- **Act:** a reinforcement-learning walking policy, trained in MuJoCo and run at 50 Hz on the board, driving 14 servos.
+- **Interact:** a live dashboard, head-follow, spoken lines and a microphone.
 
 ```
- Xbox pad ──BT──┐                                   GPU server (optional)
-                ▼                                   Open_Duck_Playground → .onnx
- Jetson ──Wi-Fi/UDP 20 Hz──►  Pi Zero 2 W  ──USB──► servo bus (14× STS3215)
- (vision, voice,              RL policy 50 Hz       BNO055 IMU, foot switches
-  follow-me)                  robot/jero_walk.py
+ PS4 pad ──BT──┐
+               ▼
+ RealSense ──USB──►  Qualcomm RB3 Gen 2 (QCS6490, Ubuntu)  ──USB──► Pico bridge ──► servo bus (14× STS3215)
+ D455 (head)         act:     RL walking policy, 50 Hz, own core
+                     sense:   onboard IMU via the sensing hub, depth + colour
+                     interact: dashboard :8080, head-follow, voice
 ```
 
-See [docs/architecture.md](docs/architecture.md) for the design decisions and [docs/architecture/](docs/architecture/README.md) for the diagrams.
+| Layer | What runs on the QCS6490 | Where |
+|---|---|---|
+| Locomotion | RL policy (ONNX) at 50 Hz, real-time priority on the fastest core; loop work 0.75 ms | `robot/jero_walk.py` |
+| Balance sensing | onboard ICM-42688 at 200 Hz through Qualcomm's sensing hub | `robot/imu_qsh.py` |
+| Perception | aligned depth + colour at 15 fps, nearest-object tracking, head-follow | `brain/eyes.py` |
+| Interaction | dashboard in any browser: camera, depth, commands, speech text, path walked | `brain/eyes.py`, `brain/show.py` |
+| Voice | spoken lines (ElevenLabs, cached for offline), mic for speech commands | `brain/show.py`, `brain/voice.py` |
 
-## Status
+Next: move perception models onto the board's Hexagon NPU (QNN), for example person detection.
 
-| Gate | Target date | Done when | State |
-|---|---|---|---|
-| G0 Parts ordered | 26 Sep | every BOM order confirmed | ☐ |
-| G1 Parts printed | 30 Sep | every part in [printing.md](docs/printing.md) ticked | ☐ |
-| G2 Servos configured | 1 Oct | 14 servos have IDs and labels, horns fitted at zero | ☐ |
-| G3 Assembled + wired | 4 Oct | `check_motors.py` sees 14 servos; IMU frame correct | ☐ |
-| G4 Walking | 7 Oct | walks for 2+ min on the Xbox pad, turns, recovers | ☐ |
-| G5 Brain demo | 8 Oct | Jetson drives it through the link; e-stop tested | ☐ |
-| G6 Demo ready | 9 Oct | 30-min loop stable, spares kit packed | ☐ |
+## The robot: Qroot micro bot
 
-The full plan and owners are in [docs/build-plan.md](docs/build-plan.md).
+<p align="center">
+  <img src="docs/images/qroot.jpg" alt="Qroot: green head with a RealSense depth camera on a black two-legged body" width="380">
+  &nbsp;&nbsp;
+  <img src="docs/images/qroot-logo.png" alt="Qroot micro bot logo" width="300">
+</p>
+
+Qroot is the open-source demonstrator for this stack. It is built on the [Open Duck Mini v2](https://github.com/apirrone/Open_Duck_Mini)
+mechanics: 14 Feetech STS3215 servos, with the RealSense in the head and the RB3 Gen 2 in the body.
+
+The code, the Python package (`jero_link`) and the paths on the robot (`~/Jero`, `~/.config/jero`) still use the
+robot's earlier name, Jero.
+
+## Branches
+
+| Branch | Robot computer | State |
+|---|---|---|
+| `main` | Qualcomm RB3 Gen 2 | **Qroot**, active |
+| `pi-zero` | Raspberry Pi Zero 2 W | frozen demo build of the Pi version (`robot/demo.sh`) |
+
+## Run it
+
+The steps in order are in [docs/commands/](docs/commands/README.md):
+1. Pose.
+2. Check the servos.
+3. Check the camera.
+4. Open the dashboard.
+5. Walk without the pad.
+6. Walk with the pad.
+7. Stand still.
+
+Setup and bring-up details are in [docs/rb3gen2.md](docs/rb3gen2.md).
+
+```bash
+git clone https://github.com/dev-ansh-r/Qroot ~/Jero
+~/Jero/robot/setup_rb3.sh            # packages, Python env, runtime, policy, link key, Bluetooth, udev
+~/Jero/robot/setup_vision.sh         # RealSense + OpenCV
+~/Jero/tools/rb3_dryrun.sh           # whole-robot check, nothing moves
+~/Jero/robot/jero.sh                 # walk with the PS4 pad (Cross starts/pauses)
+```
+
+**E-stop from a terminal on the robot:** `python ~/Jero/tools/estop.py 127.0.0.1`
 
 ## Repo layout
 
 ```
-docs/          build plan, BOM, printing, wiring, bring-up, training, link spec, demo day
-robot/         runs on the Pi: jero_walk.py (upstream policy loop + controller mux), setup, systemd
-jero_link/     pip package: UDP + HMAC command protocol, client and receiver (Pi and Jetson)
-brain/         runs on the Jetson or a laptop: keyboard teleop, follow-a-person behaviour
+docs/          RB3 bring-up, command sheets, BOM, printing, wiring, training, link spec, demo day
+robot/         walk loop (upstream policy + controller mux), servo IO, IMU drivers, setup scripts
+brain/         dashboard (eyes), show controller, voice, expressions, teleop, follow-me
+jero_link/     pip package: UDP + HMAC command protocol, client and receiver
 training/      GPU server: set up, train, watch in MuJoCo, deploy a policy
-tools/         configure servos, e-stop, fetch the policy, generate the link key
+tools/         pose, bus and IMU tests, dry run, e-stop, pad test, servo configuration
 upstream/      pinned git submodules (read-only): Open_Duck_Mini, _Runtime, _Playground
-tests/         hardware-free tests (mux, follow control)
+tests/         hardware-free tests
 ```
 
-## Quick start by machine
+## Development machines
 
-**Laptop (setting up servos and development)**
+**Laptop**
 ```bash
-git clone --recurse-submodules --shallow-submodules https://github.com/dev-ansh-r/Jero && cd Jero
+git clone --recurse-submodules --shallow-submodules https://github.com/dev-ansh-r/Qroot && cd Qroot
 pip install -e jero_link[test] numpy && make test
 ```
 
-**Pi Zero 2 W** (flash the pre-built Duck image first; see [docs/bringup.md](docs/bringup.md))
+**GPU server (training)**
 ```bash
-git clone https://github.com/dev-ansh-r/Jero ~/Jero && ~/Jero/robot/setup_pi.sh
-workon open-duck-mini-runtime && python ~/Jero/robot/jero_walk.py
+git clone --recurse-submodules=upstream/Open_Duck_Playground --shallow-submodules https://github.com/dev-ansh-r/Qroot
+Qroot/training/setup_server.sh && Qroot/training/train.sh
 ```
-
-**Jetson Orin Nano Super / laptop brain**
-```bash
-git clone https://github.com/dev-ansh-r/Jero && cd Jero && pip install -e jero_link
-scp bdxv2@jero.local:.config/jero/link.key ~/.config/jero/link.key
-python brain/teleop.py jero.local          # or: python brain/follow.py jero.local --dry-run
-```
-
-**GPU server**
-```bash
-git clone --recurse-submodules=upstream/Open_Duck_Playground --shallow-submodules https://github.com/dev-ansh-r/Jero
-Jero/training/setup_server.sh && Jero/training/train.sh
-```
-
-**E-stop from any laptop on the network:** `python tools/estop.py jero.local`
 
 ## Pinned upstream
 
@@ -84,4 +110,4 @@ Bump a submodule deliberately (`git -C upstream/<repo> checkout <sha>`), then no
 ## Credits
 
 The mechanical design, runtime and training environment are by Antoine Pirrone and the Open Duck community
-(Open_Duck_Mini is Apache-2.0). Jero only adds the integration layer in this repo.
+(Open_Duck_Mini is Apache-2.0). Qroot adds the integration layer in this repo.

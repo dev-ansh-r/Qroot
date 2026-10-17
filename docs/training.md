@@ -8,8 +8,8 @@ for 10 Oct. Set the pipeline up anyway, so it's ready if our masses differ or we
 Requires an NVIDIA GPU with a CUDA 12 driver. The Playground pins `jax[cuda12]`.
 
 ```bash
-git clone --recurse-submodules=upstream/Open_Duck_Playground --shallow-submodules https://github.com/dev-ansh-r/Jero
-cd Jero && training/setup_server.sh        # installs uv, runs uv sync, asserts JAX sees the GPU
+git clone --recurse-submodules=upstream/Open_Duck_Playground --shallow-submodules https://github.com/dev-ansh-r/Qroot
+cd Qroot && training/setup_server.sh        # installs uv, runs uv sync, asserts JAX sees the GPU
 ```
 
 ## Train
