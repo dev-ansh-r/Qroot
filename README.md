@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/qroot-logo.png" alt="Qroot micro bot" width="320">
+</p>
+
 # Physical AI on Qualcomm: a walking robot on the RB3 Gen 2
 
 This repo is an end-to-end physical AI stack on one Qualcomm board. A **Qualcomm RB3 Gen 2** (QCS6490) runs
@@ -30,8 +34,6 @@ Next: move perception models onto the board's Hexagon NPU (QNN), for example per
 
 <p align="center">
   <img src="docs/images/qroot.jpg" alt="Qroot: green head with a RealSense depth camera on a black two-legged body" width="380">
-  &nbsp;&nbsp;
-  <img src="docs/images/qroot-logo.png" alt="Qroot micro bot logo" width="300">
 </p>
 
 Qroot is the open-source demonstrator for this stack. It is built on the [Open Duck Mini v2](https://github.com/apirrone/Open_Duck_Mini)
